@@ -1,4 +1,10 @@
-import { Route, BrowserRouter as Router, Switch, Link } from "react-router-dom";
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  Link,
+  Redirect,
+} from "react-router-dom";
 import { SidebarDataFirst, SidebarDataSecond } from "../components/SidebarData";
 import React from "react";
 import clsx from "clsx";
@@ -100,106 +106,114 @@ function Admin() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-
-  return (
-    <>
-      {/* <h1>ADmin page</h1> */}
-      <Router>
-        <div className={classes.root}>
-          <CssBaseline />
-          <AppBar
-            position="fixed"
-            className={clsx(classes.appBar, {
-              [classes.appBarShift]: open,
-            })}
-          >
-            <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                edge="start"
-                className={clsx(classes.menuButton, open && classes.hide)}
+  if (sessionStorage.getItem("type") === "admin") {
+    return (
+      <>
+        <Router>
+          <div className={classes.root}>
+            <CssBaseline />
+            <div>
+              <AppBar
+                position="fixed"
+                className={clsx(classes.appBar, {
+                  [classes.appBarShift]: open,
+                })}
               >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap>
-                Admin
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <Drawer
-            className={classes.drawer}
-            variant="persistent"
-            anchor="left"
-            open={open}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-          >
-            <div className={classes.drawerHeader}>
-              <IconButton onClick={handleDrawerClose}>
-                {theme.direction === "ltr" ? (
-                  <ChevronLeftIcon />
-                ) : (
-                  <ChevronRightIcon />
-                )}
-              </IconButton>
+                <Toolbar>
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    onClick={handleDrawerOpen}
+                    edge="start"
+                    className={clsx(classes.menuButton, open && classes.hide)}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                  <Typography variant="h6" noWrap>
+                    Admin
+                  </Typography>
+                </Toolbar>
+              </AppBar>
             </div>
-            <Divider />
-            <List>
-              {SidebarDataFirst.map((item, index) => (
-                <ListItem button key={index}>
-                  <Link
-                    to={item.path}
-                    style={{
-                      textDecoration: "none",
-                      color: "inherit",
-                    }}
-                  >
-                    <ListItemText primary={item.title} />
-                  </Link>
-                </ListItem>
-              ))}
-            </List>
-            <Divider />
-            <List>
-              {SidebarDataSecond.map((item, index) => (
-                <ListItem button key={index}>
-                  <Link
-                    to={item.path}
-                    style={{
-                      textDecoration: "none",
-                      color: "inherit",
-                    }}
-                  >
-                    <ListItemText primary={item.title} />
-                  </Link>
-                </ListItem>
-              ))}
-            </List>
-          </Drawer>
-          <main
-            className={clsx(classes.content, {
-              [classes.contentShift]: open,
-            })}
-          >
-            <Container maxWidth="lg" className={classes.container}>
-              <Switch>
+            <Drawer
+              className={classes.drawer}
+              variant="persistent"
+              anchor="left"
+              open={open}
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+            >
+              <div className={classes.drawerHeader}>
+                <IconButton onClick={handleDrawerClose}>
+                  {theme.direction === "ltr" ? (
+                    <ChevronLeftIcon />
+                  ) : (
+                    <ChevronRightIcon />
+                  )}
+                </IconButton>
+              </div>
+              <Divider />
+              <List>
                 {SidebarDataFirst.map((item, index) => (
-                  <Route path={item.path} component={item.component}></Route>
+                  <ListItem button key={index}>
+                    <Link
+                      to={item.path}
+                      style={{
+                        textDecoration: "none",
+                        color: "inherit",
+                      }}
+                    >
+                      <ListItemText primary={item.title} />
+                    </Link>
+                  </ListItem>
                 ))}
+              </List>
+              <Divider />
+              <List>
                 {SidebarDataSecond.map((item, index) => (
-                  <Route path={item.path} component={item.component}></Route>
+                  <ListItem button key={index}>
+                    <Link
+                      to={item.path}
+                      style={{
+                        textDecoration: "none",
+                        color: "inherit",
+                      }}
+                    >
+                      <ListItemText primary={item.title} />
+                    </Link>
+                  </ListItem>
                 ))}
-              </Switch>
-            </Container>
-          </main>
-        </div>
-        {/* <Dashboard></Dashboard> */}
-      </Router>
-    </>
-  );
+              </List>
+            </Drawer>
+            <main
+              className={clsx(classes.content, {
+                [classes.contentShift]: open,
+              })}
+            >
+              <Container maxWidth="lg" className={classes.container}>
+                <Switch>
+                  {SidebarDataFirst.map((item, index) => (
+                    <Route path={item.path} component={item.component}></Route>
+                  ))}
+                  {SidebarDataSecond.map((item, index) => (
+                    <Route path={item.path} component={item.component}></Route>
+                  ))}
+                  <Route component={SidebarDataFirst[0].component}></Route>
+                </Switch>
+              </Container>
+            </main>
+          </div>
+        </Router>
+      </>
+    );
+  } else {
+    return (
+      <div>
+        <Redirect to="/User"></Redirect>
+      </div>
+    );
+  }
 }
 
 export default Admin;

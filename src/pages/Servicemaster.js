@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import MuiAlert from "@material-ui/lab/Alert";
 import {
   Grid,
   Paper,
   Typography,
   makeStyles,
+  Snackbar,
   Fab,
   TextField,
 } from "@material-ui/core";
@@ -15,27 +17,37 @@ function Servicemaster() {
   const [TyreCompanyname, setTyreCompanyname] = useState("");
   const [Vechilename, setVechilename] = useState("");
 
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const addService = () => {
     Axios.post("http://localhost:3001/addService", {
       Servicename: Servicename,
-    }).then(() => {
-      alert("succesful insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
   const addTyreCompany = () => {
     Axios.post("http://localhost:3001/addTyre", {
       TyreCompanyname: TyreCompanyname,
-    }).then(() => {
-      alert("succesful insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
   const addVechile = () => {
     Axios.post("http://localhost:3001/addVechile", {
       Vechilename: Vechilename,
-    }).then(() => {
-      alert("succesful insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
@@ -135,6 +147,9 @@ function Servicemaster() {
                 <AddIcon />
               </Fab>
             </div>
+            <Snackbar open={Open} autoHideDuration={3000} onClose={handleClose}>
+              <MuiAlert severity="success">{msg}</MuiAlert>
+            </Snackbar>
           </Paper>
         </Grid>
       </Grid>

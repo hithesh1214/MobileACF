@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import MuiAlert from "@material-ui/lab/Alert";
 import {
   TextField,
   Grid,
   Paper,
   Typography,
   StepLabel,
+  Snackbar,
   Step,
   Stepper,
   makeStyles,
@@ -19,16 +21,17 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  FormControl,
 } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+// import RemoveIcon from "@material-ui/icons/Remove";
 import Axios from "axios";
 
-function NewBill() {
+function Neworder() {
   const [Servicelist, setServicelist] = useState([]);
   const [Vechilelist, setVechilelist] = useState([]);
   const [Tyrelist, setTyrelist] = useState([]);
-  const [Vechilecat, setVechilecat] = useState("");
+
+  //pricesheet det
   const [priceSheet, setpriceSheet] = useState("");
 
   //orders stack
@@ -36,6 +39,7 @@ function NewBill() {
   const [totalcost, settotalcost] = useState(0);
 
   //each order details
+  const [Vechilecat, setVechilecat] = useState("");
   const [Service, setService] = useState("");
   const [Tyre, setTyre] = useState("");
   const [Quantity, setQuantity] = useState("");
@@ -46,18 +50,21 @@ function NewBill() {
     Quantity: Quantity,
     cost: cost,
   };
+  const [recDealername, setrecDealername] = useState("");
+  const [recDealerContact, setrecDealerContact] = useState("");
+  const [rectyresizelist, setrectyresizelist] = useState([]);
+  const [recbrandlist, setrecbrandlist] = useState([]);
 
   //customer details
-  const [linked, setlinked] = useState("");
+  var [User, setUser] = useState({});
+
+  //recommends det
   const [recom, setrecom] = useState("");
-  var [User, setUser] = useState({
-    FirstName: "",
-    LastName: "",
-    Address: "",
-    Pincode: "",
-    ContactNo: "",
-    ACFLinkedFleet: linked,
-  });
+  const [recommends, setrecommends] = useState([]);
+  const [recvechcat, setrecvechcat] = useState("");
+  const [rectyresize, setrectyesize] = useState("");
+  const [rectyrebrand, setrectyrebrand] = useState("");
+  const [recquantity, setrecquantity] = useState("");
 
   const addrow = () => {
     setOrders((prevarr) => [...prevarr, Orderstemp]);
@@ -65,10 +72,17 @@ function NewBill() {
   };
 
   const updateField = (e) => {
-    setUser({
-      ...User,
-      [e.target.name]: e.target.value,
-    });
+    if (e.target.name === "ContactNo" || e.target.name === "Pincode") {
+      setUser({
+        ...User,
+        [e.target.name]: e.target.value.replace(/\D/g, ""),
+      });
+    } else {
+      setUser({
+        ...User,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
 
   const calculate = () => {
@@ -77,6 +91,36 @@ function NewBill() {
       sum += Orders[i].cost;
     }
     settotalcost(sum);
+  };
+
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const addbill = () => {
+    Axios.post("http://localhost:3001/addorder", {
+      ACFid: sessionStorage.getItem("user_id"),
+      Userdet: User,
+      Servicedet: {
+        Vechilecat: Vechilecat,
+        Orders: Orders,
+        Totalcost: totalcost,
+      },
+      recom: {
+        recDealername: recDealername,
+        recDealerContact: recDealerContact,
+        recvec: recvechcat,
+        rectyresize: rectyresize,
+        rectyrebrand: rectyrebrand,
+        recquantity: recquantity,
+      },
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
+    });
   };
 
   useEffect(() => {
@@ -95,9 +139,23 @@ function NewBill() {
     const d = JSON.parse(sessionStorage.getItem("data"));
     const prices = JSON.parse(d[0].Pricesheet);
     setpriceSheet(prices);
-    // console.log(prices);
-    // console.log(User);
+    const recs = JSON.parse(d[0].Recommends);
+    setrecommends(recs);
   }, []);
+  useEffect(() => {
+    Axios.post("http://localhost:3001/gettyresize", {
+      Vechid: recvechcat,
+    }).then((response) => {
+      setrectyresizelist(response.data);
+    });
+  }, [recvechcat]);
+  useEffect(() => {
+    Axios.post("http://localhost:3001/gettyrebrand", {
+      Sizeid: rectyresize,
+    }).then((response) => {
+      setrecbrandlist(response.data);
+    });
+  }, [rectyresize]);
 
   const useStyles = makeStyles((theme) => ({
     backButton: {
@@ -212,16 +270,15 @@ function NewBill() {
                   <label className={classes.margin}>ACF Linked Fleet</label>
                   <Select
                     variant="outlined"
-                    value={linked}
-                    onChange={(e) => {
-                      setlinked(e.target.value);
-                    }}
+                    value={User.ACFLinkedFleet}
+                    name="ACFLinkedFleet"
+                    onChange={updateField}
                   >
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>
                   </Select>
                 </Grid>
-                <Grid item xs={1} lg={2}>
+                {/* <Grid item xs={1} lg={2}>
                   <Button
                     variant="contained"
                     color="primary"
@@ -229,7 +286,7 @@ function NewBill() {
                   >
                     Save
                   </Button>
-                </Grid>
+                </Grid> */}
               </Grid>
             </Paper>
           </div>
@@ -322,16 +379,26 @@ function NewBill() {
                       <TableCell>Tyre Company</TableCell>
                       <TableCell>Quantity</TableCell>
                       <TableCell>Cost</TableCell>
+                      {/* <TableCell></TableCell> */}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Orders.map((row) => {
+                    {Orders.map((row, index) => {
                       return (
                         <TableRow>
                           <TableCell>{row.Servicename}</TableCell>
                           <TableCell>{row.TyreCompanyname}</TableCell>
                           <TableCell>{row.Quantity}</TableCell>
                           <TableCell>{row.cost}</TableCell>
+                          {/* <TableCell>
+                            <Fab
+                              size="small"
+                              color="primary"
+                              onClick={Orders.splice(index, 1)}
+                            >
+                              <RemoveIcon />
+                            </Fab>
+                          </TableCell> */}
                         </TableRow>
                       );
                     })}
@@ -384,28 +451,99 @@ function NewBill() {
                     <MenuItem value="No">No</MenuItem>
                   </Select>
                 </Grid>
-                <Grid item xs={6}>
-                  <FormControl className={classes.select}>
-                    <InputLabel>Dealer Name</InputLabel>
-                    <Select>
-                      <MenuItem>BHaskar Rao</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={6}>
-                  <FormControl className={classes.select}>
-                    <InputLabel className={classes.margin}>
-                      ContactNo
-                    </InputLabel>
-                    <TextField variant="filled" disabled></TextField>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={6}>
-                  <FormControl className={classes.select}>
-                    <InputLabel className={classes.margin}>TyreType</InputLabel>
-                    <TextField variant="filled" disabled></TextField>
-                  </FormControl>
-                </Grid>
+                {recom === "Yes" ? (
+                  <Grid container spacing={2} className={classes.margin}>
+                    <Grid item xs={6}>
+                      <InputLabel className={classes.margin}>
+                        Dealer Name
+                      </InputLabel>
+                      <Select
+                        className={classes.select}
+                        onChange={(e) => {
+                          const idx = recommends.findIndex(
+                            (r) => r.Dealername === e.target.value
+                          );
+                          setrecDealername(recommends[idx].Dealername);
+                          setrecDealerContact(recommends[idx].DealerContact);
+                        }}
+                      >
+                        {recommends.map((r) => (
+                          <MenuItem value={r.Dealername}>
+                            {r.Dealername}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <InputLabel className={classes.margin}>
+                        Dealer Contact No.
+                      </InputLabel>
+                      <TextField
+                        // variant="filled"
+                        disabled
+                        value={recDealerContact}
+                      ></TextField>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <InputLabel className={classes.margin}>
+                        Vechile Category
+                      </InputLabel>
+                      <Select
+                        className={classes.select}
+                        onChange={(e) => {
+                          setrecvechcat(e.target.value);
+                        }}
+                      >
+                        {Vechilelist.map((row) => (
+                          <MenuItem value={row.Vechileid}>
+                            {row.Vechilename}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <InputLabel className={classes.margin}>
+                        Tyre Size
+                      </InputLabel>
+                      <Select
+                        className={classes.select}
+                        onChange={(e) => {
+                          setrectyesize(e.target.value);
+                        }}
+                      >
+                        {rectyresizelist.map((row) => (
+                          <MenuItem value={row.Sizeid}>{row.size}</MenuItem>
+                        ))}
+                      </Select>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <InputLabel className={classes.margin}>
+                        Tyre Brand
+                      </InputLabel>
+                      <Select
+                        className={classes.select}
+                        onChange={(e) => {
+                          setrectyrebrand(e.target.value);
+                        }}
+                      >
+                        {recbrandlist.map((row) => (
+                          <MenuItem value={row.id}>{row.Brand}</MenuItem>
+                        ))}
+                      </Select>
+                    </Grid>
+                    <Grid item xs={4} lg={2} className={classes.margin}>
+                      <TextField
+                        name="Quantity"
+                        label="Quantity"
+                        onChange={(e) => {
+                          setrecquantity(e.target.value.replace(/\D/g, ""));
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Typography></Typography>
+                )}
               </Grid>
             </Paper>
           </div>
@@ -419,6 +557,15 @@ function NewBill() {
   const steps = getSteps();
 
   const handleNext = () => {
+    if (activeStep === 0) {
+      if (Object.keys(User).length !== 6) {
+        return;
+      }
+    } else if (activeStep === 1) {
+      if (!Vechilecat || !Orders || !totalcost) {
+        return;
+      }
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
@@ -426,8 +573,8 @@ function NewBill() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
+  const handleRegister = () => {
+    addbill();
   };
   return (
     <div className={classes.root}>
@@ -444,7 +591,59 @@ function NewBill() {
             <Typography className={classes.instructions}>
               All steps completed
             </Typography>
-            <Button onClick={handleReset}>Reset</Button>
+            <Paper className={classes.paper}>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Service Type</TableCell>
+                      <TableCell>Tyre Company</TableCell>
+                      <TableCell>Quantity</TableCell>
+                      <TableCell>Cost</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Orders.map((row) => {
+                      return (
+                        <TableRow>
+                          <TableCell>{row.Servicename}</TableCell>
+                          <TableCell>{row.TyreCompanyname}</TableCell>
+                          <TableCell>{row.Quantity}</TableCell>
+                          <TableCell>{row.cost}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TextField
+                label="total cost"
+                variant="outlined"
+                value={totalcost}
+                className={classes.margin}
+                disabled
+              ></TextField>
+              <Typography>Please check before register</Typography>
+            </Paper>
+            <Snackbar open={Open} autoHideDuration={3000} onClose={handleClose}>
+              <MuiAlert severity="success">{msg}</MuiAlert>
+            </Snackbar>
+            <div>
+              <Button
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                className={classes.backButton}
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleRegister}
+              >
+                Register Bill
+              </Button>
+            </div>
           </div>
         ) : (
           <div>
@@ -475,4 +674,4 @@ function NewBill() {
   );
 }
 
-export default NewBill;
+export default Neworder;

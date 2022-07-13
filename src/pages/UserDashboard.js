@@ -6,7 +6,7 @@ import Axios from "axios";
 
 function UserDashboard() {
   useEffect(() => {
-    Axios.post("http://localhost:3001/getUserdet", {
+    Axios.post("http://localhost:3001/getACFdet", {
       user_id: sessionStorage.getItem("user_id"),
     }).then((response) => {
       console.log(response.data);
@@ -32,6 +32,7 @@ function UserDashboard() {
     },
   }));
   const classes = useStyles();
+
   return (
     <div>
       <Grid container spacing={3}>
@@ -57,7 +58,6 @@ function UserDashboard() {
             <Typography variant="h6">Tap to check older bills</Typography>
             <Button variant="contained" color="primary">
               <Link to="/User/History" className={classes.Link}>
-                {" "}
                 History
               </Link>
             </Button>

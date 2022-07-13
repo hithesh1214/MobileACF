@@ -1,6 +1,6 @@
 import SBU from "../pages/SBU";
 import SBUmaster from "../pages/SBUmaster";
-import Home from "../pages/Home";
+// import Home from "../pages/Home";
 import RBUmaster from "../pages/RBUmaster";
 import RBU from "../pages/RBU";
 import ABUmaster from "../pages/ABUmaster";
@@ -11,11 +11,11 @@ import ACFMaster from "../pages/ACFMaster";
 import ACF from "../pages/ACF";
 
 export const SidebarDataFirst = [
-  {
-    title: "Home",
-    path: "/Admin/Home",
-    component: Home,
-  },
+  // {
+  //   title: "Home",
+  //   path: "/Admin/Home",
+  //   component: Home,
+  // },
   {
     title: "ACFs",
     path: "/Admin/ACFs",

@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import Axios from "axios";
-import { Grid, Paper, Typography } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Grid, Paper, Typography, Snackbar } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import TextField from "@material-ui/core/TextField";
 import Fab from "@material-ui/core/Fab";
@@ -10,11 +11,19 @@ import { makeStyles } from "@material-ui/core/styles";
 function SBUmaster() {
   const [SBUname, setSBUname] = useState("");
 
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const addSBU = () => {
     Axios.post("http://localhost:3001/addSBU", {
       SBUname: SBUname,
-    }).then(() => {
-      alert("succesfull insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
@@ -58,6 +67,9 @@ function SBUmaster() {
                 <AddIcon />
               </Fab>
             </div>
+            <Snackbar open={Open} autoHideDuration={3000} onClose={handleClose}>
+              <MuiAlert severity="success">{msg}</MuiAlert>
+            </Snackbar>
           </Paper>
         </Grid>
       </Grid>

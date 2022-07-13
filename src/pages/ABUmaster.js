@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Paper,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  makeStyles,
-  Fab,
-  TextField,
-} from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Grid } from "@material-ui/core";
+import { Paper } from "@material-ui/core";
+import { Snackbar } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
+import { FormControl } from "@material-ui/core";
+import { InputLabel } from "@material-ui/core";
+import { Select } from "@material-ui/core";
+import { MenuItem } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
+import { Fab } from "@material-ui/core";
+import { TextField } from "@material-ui/core";
 import Axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
 
@@ -22,14 +22,22 @@ function ABUmaster() {
   const [RBUlist, setRBUlist] = useState([]);
   const [ABUcode, setABUcode] = useState("");
 
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const addABU = () => {
     Axios.post("http://localhost:3001/addABU", {
       ABUname: ABUname,
       ABUcode: ABUcode,
       RBUid: RBUid,
       SBUid: SBUid,
-    }).then(() => {
-      alert("succesful insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
@@ -144,6 +152,9 @@ function ABUmaster() {
               </Fab>
             </div>
           </Paper>
+          <Snackbar open={Open} autoHideDuration={3000} onClose={handleClose}>
+            <MuiAlert severity="success">{msg}</MuiAlert>
+          </Snackbar>
         </Grid>
       </Grid>
     </div>

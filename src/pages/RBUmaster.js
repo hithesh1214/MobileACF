@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import MuiAlert from "@material-ui/lab/Alert";
 import {
   Grid,
   Paper,
@@ -6,6 +7,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Snackbar,
   MenuItem,
   makeStyles,
   Fab,
@@ -22,12 +24,20 @@ function RBUmaster() {
     setSBUid(event.target.value);
   };
 
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const addRBU = () => {
     Axios.post("http://localhost:3001/addRBU", {
       RBUname: RBUname,
       SBUid: SBUid,
-    }).then(() => {
-      alert("succesful insert");
+    }).then((response) => {
+      setmsg(response.data.message);
+      setOpen(true);
     });
   };
 
@@ -102,6 +112,9 @@ function RBUmaster() {
               </Fab>
             </div>
           </Paper>
+          <Snackbar open={Open} autoHideDuration={3000} onClose={handleClose}>
+            <MuiAlert severity="success">{msg}</MuiAlert>
+          </Snackbar>
         </Grid>
       </Grid>
     </div>

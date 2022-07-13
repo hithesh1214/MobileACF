@@ -1,5 +1,10 @@
 import React from "react";
-import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  Redirect,
+} from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   AppBar,
@@ -10,7 +15,7 @@ import {
 } from "@material-ui/core";
 import UserDashboard from "./UserDashboard";
 import History from "./History";
-import NewBill from "./NewBill";
+import Neworder from "./Neworder";
 
 function User() {
   const useStyles = makeStyles((theme) => ({
@@ -19,28 +24,35 @@ function User() {
     },
   }));
   const classes = useStyles();
-
-  return (
-    <div>
-      <CssBaseline />
-      <AppBar position="fixed">
-        <Toolbar>
-          <Typography variant="h6" noWrap>
-            User
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="lg" className={classes.container}>
-        <Router>
-          <Switch>
-            <Route path="/User/NewBill" component={NewBill}></Route>
-            <Route path="/User/History" component={History}></Route>
-            <Route component={UserDashboard}></Route>
-          </Switch>
-        </Router>
-      </Container>
-    </div>
-  );
+  if (sessionStorage.getItem("type") === "user") {
+    return (
+      <div>
+        <CssBaseline />
+        <AppBar position="fixed">
+          <Toolbar>
+            <Typography variant="h6" noWrap>
+              User
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Container maxWidth="lg" className={classes.container}>
+          <Router>
+            <Switch>
+              <Route path="/User/NewBill" component={Neworder}></Route>
+              <Route path="/User/History" component={History}></Route>
+              <Route path="/User" component={UserDashboard}></Route>
+            </Switch>
+          </Router>
+        </Container>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <Redirect to="/Admin"></Redirect>
+      </div>
+    );
+  }
 }
 
 export default User;

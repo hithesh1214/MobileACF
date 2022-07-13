@@ -1,30 +1,34 @@
 import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Paper,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  makeStyles,
-  Stepper,
-  Step,
-  TableCell,
-  TableHead,
-  TableRow,
-  Table,
-  TableBody,
-  TableContainer,
-  StepLabel,
-  StepContent,
-  Button,
-  TextField,
-  Fab,
-  Popover,
-} from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Grid } from "@material-ui/core";
+import { Paper } from "@material-ui/core";
+import { Snackbar } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
+import { FormControl } from "@material-ui/core";
+import { InputLabel } from "@material-ui/core";
+import { Select } from "@material-ui/core";
+import { MenuItem } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
+import { Stepper } from "@material-ui/core";
+import { Table } from "@material-ui/core";
+import { TableBody } from "@material-ui/core";
+import { TableCell } from "@material-ui/core";
+import { TableContainer } from "@material-ui/core";
+import { TableHead } from "@material-ui/core";
+import { TableRow } from "@material-ui/core";
+import { Step } from "@material-ui/core";
+import { StepLabel } from "@material-ui/core";
+import { StepContent } from "@material-ui/core";
+import { Button } from "@material-ui/core";
+import { TextField } from "@material-ui/core";
+import { Fab } from "@material-ui/core";
+import { Popover } from "@material-ui/core";
+import { List } from "@material-ui/core";
+import { ListItem } from "@material-ui/core";
+import { ListItemText } from "@material-ui/core";
 import Axios from "axios";
 import AddLocationIcon from "@material-ui/icons/AddLocation";
+import AddIcon from "@material-ui/icons/Add";
 
 function ACFMaster() {
   const [SBUlist, setSBUlist] = useState([]);
@@ -42,54 +46,135 @@ function ACFMaster() {
 
   // User details
   var [User, setUser] = useState({
-    ShopName: "",
-    OwnerName: "",
-    ContactNo: "",
-    ShopAddress: "",
-    Pincode: "",
-    Emailid: "",
-    Username: "",
-    Password: "",
-    Latitude: "",
-    Longitude: "",
+    // ShopName: "",
+    // OwnerName: "",
+    // ContactNo: "",
+    // ShopAddress: "",
+    // Pincode: "",
+    // Emailid: "",
+    // Username: "",
+    // Password: "",
+    // Latitude: "",
+    // Longitude: "",
   });
   var [Pricesheet, setPricesheet] = useState({});
-  // const lenOfSerVicelist = Servicelist.length;
+
+  //recomendation det
+  const [Dealername, setDealername] = useState("");
+  const [DealerContact, setDealerContact] = useState("");
+  const [recommends, setrecommends] = useState([]);
+  const recomtemp = {
+    Dealername: Dealername,
+    DealerContact: DealerContact,
+  };
+
+  //email check
+  const [isValidEmail, setisValidEmail] = useState(false);
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const validateEmail = (event) => {
+    const email = event.target.value;
+    if (emailRegex.test(email)) {
+      setisValidEmail(true);
+    } else {
+      setisValidEmail(false);
+    }
+  };
+
   const addUser = () => {
-    Axios.post("http://localhost:3001/addUser", {
+    Axios.post("http://localhost:3001/addACF", {
       User: User,
       Pricesheet: Pricesheet,
+      Recommends: recommends,
       SBUid: SBUid,
       RBUid: RBUid,
       ABUid: ABUid,
     }).then((response) => {
-      // console.log(response);
+      setsever(true);
+      setmsg(response.data.message);
+      setOpen(true);
     });
+  };
+
+  const addrow = () => {
+    setrecommends((prevarr) => [...prevarr, recomtemp]);
+    // console.log(Orders);
   };
 
   const updatePricesheet = (e) => {
     setPricesheet({
       ...Pricesheet,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value.replace(/\D/g, ""),
     });
   };
 
   const updateField = (e) => {
-    setUser({
-      ...User,
-      [e.target.name]: e.target.value,
-    });
+    if (e.target.name === "ContactNo" || e.target.name === "Pincode") {
+      setUser({
+        ...User,
+        [e.target.name]: e.target.value.replace(/\D/g, ""),
+      });
+    } else if (e.target.name === "Emailid") {
+      validateEmail(e);
+      setUser({
+        ...User,
+        [e.target.name]: e.target.value,
+      });
+    } else {
+      setUser({
+        ...User,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
 
   const handleNext = () => {
+    if (activeStep === 0) {
+      if (SBUid === "") {
+        setmsg("Please select the SBU");
+        setOpen(true);
+        return;
+      } else if (RBUid === "") {
+        setmsg("Please select the RBU");
+        setOpen(true);
+        return;
+      } else if (ABUid === "") {
+        setmsg("Please select the ABU");
+        setOpen(true);
+        return;
+      } else if (Object.keys(User).length !== 8) {
+        setmsg("Please enter all the details");
+        setOpen(true);
+        return;
+      } else if (!isValidEmail) {
+        setmsg("Enter a valid email");
+        setOpen(true);
+        return;
+      }
+    } else if (activeStep === 1) {
+      if (
+        Object.keys(Pricesheet).length !==
+        Vechilelist.length * Servicelist.length
+      ) {
+        setmsg("Enter all the values");
+        setOpen(true);
+        return;
+      }
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    console.log(User);
-    // console.log(Servicelist);
-    // console.log(Pricesheet);
+  };
+
+  //notifier fields
+  const [Open, setOpen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const [sever, setsever] = useState(false);
+  const handleCloseSnackbar = () => {
+    setOpen(false);
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -113,6 +198,42 @@ function ACFMaster() {
       "ACF Credentials",
     ];
   }
+
+  useEffect(() => {
+    Axios.get("http://localhost:3001/getSBU").then((response) => {
+      // console.log(response.data);
+      setSBUlist(response.data);
+    });
+  }, []);
+  useEffect(() => {
+    Axios.get("http://localhost:3001/getService").then((response) => {
+      //   console.log(response.data);
+      setServicelist(response.data);
+    });
+  }, []);
+  useEffect(() => {
+    Axios.get("http://localhost:3001/getVechile").then((response) => {
+      //   console.log(response.data);
+      setVechilelist(response.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    Axios.post("http://localhost:3001/getRBU", {
+      SBUid: SBUid,
+    }).then((response) => {
+      //   console.log(response.data);
+      setRBUlist(response.data);
+    });
+  }, [SBUid]);
+
+  useEffect(() => {
+    Axios.post("http://localhost:3001/getABU", {
+      RBUid: RBUid,
+    }).then((response) => {
+      setABUlist(response.data);
+    });
+  }, [RBUid]);
 
   function getStepContent(step) {
     switch (step) {
@@ -213,6 +334,7 @@ function ACFMaster() {
                     color="primary"
                     aria-label="add"
                     size="medium"
+                    className={classes.margin}
                     onClick={selectLoc}
                   >
                     <AddLocationIcon />
@@ -237,6 +359,7 @@ function ACFMaster() {
                 </Grid>
                 <Grid item lg={6}>
                   <TextField
+                    helperText={`${isValidEmail ? "" : "enter a valid email"}`}
                     variant="outlined"
                     margin="normal"
                     required
@@ -290,13 +413,58 @@ function ACFMaster() {
       case 2:
         return (
           <div>
-            <Paper>
-              <Grid container spacing={1}>
-                <Grid item xs={12}>
-                  <TextField name="Dealer name"></TextField>
+            <Paper className={classes.paper}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} lg={4}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    label="Dealer name"
+                    name="Dealer name"
+                    value={recomtemp.Dealername}
+                    className={classes.input}
+                    onChange={(e) => {
+                      setDealername(e.target.value);
+                    }}
+                  />
                 </Grid>
-                <Grid item xs={12}>
-                  <TextField name="Dealer Contact No."></TextField>
+                <Grid item xs={12} lg={4}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    label="Dealer Contact No."
+                    name="Dealer Contact No."
+                    value={recomtemp.DealerContact}
+                    className={classes.input}
+                    onChange={(e) => {
+                      setDealerContact(e.target.value);
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={2} lg={2}>
+                  <Fab
+                    size="medium"
+                    color="primary"
+                    aria-label="add"
+                    className={classes.margin}
+                    onClick={addrow}
+                  >
+                    <AddIcon />
+                  </Fab>
+                </Grid>
+                <Grid item lg={10}>
+                  <List>
+                    {recommends.map((r) => (
+                      <ListItem>
+                        <ListItemText
+                          primary={r.Dealername}
+                          secondary={r.DealerContact}
+                        ></ListItemText>
+                      </ListItem>
+                    ))}
+                  </List>
                 </Grid>
               </Grid>
             </Paper>
@@ -307,7 +475,7 @@ function ACFMaster() {
           <div className={classes.steps}>
             <Paper className={classes.paper}>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid item xs={12} lg={5}>
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -319,7 +487,7 @@ function ACFMaster() {
                     onChange={updateField}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} lg={5}>
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -339,42 +507,6 @@ function ACFMaster() {
         return "Unknown step";
     }
   }
-
-  useEffect(() => {
-    Axios.get("http://localhost:3001/getSBU").then((response) => {
-      // console.log(response.data);
-      setSBUlist(response.data);
-    });
-  }, []);
-  useEffect(() => {
-    Axios.get("http://localhost:3001/getService").then((response) => {
-      //   console.log(response.data);
-      setServicelist(response.data);
-    });
-  }, []);
-  useEffect(() => {
-    Axios.get("http://localhost:3001/getVechile").then((response) => {
-      //   console.log(response.data);
-      setVechilelist(response.data);
-    });
-  }, []);
-
-  useEffect(() => {
-    Axios.post("http://localhost:3001/getRBU", {
-      SBUid: SBUid,
-    }).then((response) => {
-      //   console.log(response.data);
-      setRBUlist(response.data);
-    });
-  }, [SBUid]);
-
-  useEffect(() => {
-    Axios.post("http://localhost:3001/getABU", {
-      RBUid: RBUid,
-    }).then((response) => {
-      setABUlist(response.data);
-    });
-  }, [RBUid]);
 
   const useStyles = makeStyles((theme) => ({
     paper: {
@@ -404,6 +536,9 @@ function ACFMaster() {
       width: theme.spacing(100),
       padding: theme.spacing(2),
     },
+    margin: {
+      margin: theme.spacing(1, 0),
+    },
   }));
   const classes = useStyles();
   return (
@@ -414,9 +549,6 @@ function ACFMaster() {
             <Typography variant="h4">ACF Registration</Typography>
           </Grid>
           <Grid item xs={12} lg={4}>
-            {/* <Typography variant="h5">
-              Select from which SBU you want to select RBU
-            </Typography> */}
             <FormControl className={classes.select}>
               <InputLabel>SBU Name</InputLabel>
               <Select
@@ -433,9 +565,6 @@ function ACFMaster() {
             </FormControl>
           </Grid>
           <Grid item xs={12} lg={4}>
-            {/* <Typography variant="h5">
-              Select from which RBU you want to select ABU
-            </Typography> */}
             <FormControl className={classes.select}>
               <InputLabel>RBU Name</InputLabel>
               <Select
@@ -452,9 +581,6 @@ function ACFMaster() {
             </FormControl>
           </Grid>
           <Grid item xs={12} lg={4}>
-            {/* <Typography variant="h5">
-              Select to which ABU you want to add
-            </Typography> */}
             <FormControl className={classes.select}>
               <InputLabel>ABU Name</InputLabel>
               <Select
@@ -472,6 +598,13 @@ function ACFMaster() {
           </Grid>
         </Grid>
       </Paper>
+      <Snackbar
+        open={Open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <MuiAlert severity={sever ? "success" : "error"}>{msg}</MuiAlert>
+      </Snackbar>
       <Paper className={classes.paper}>
         <Stepper activeStep={activeStep} orientation="vertical">
           {steps.map((label, index) => (

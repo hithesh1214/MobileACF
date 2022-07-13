@@ -16,7 +16,7 @@ import ListItem from "@material-ui/core/ListItem";
 import { Paper } from "@material-ui/core";
 import ListItemText from "@material-ui/core/ListItemText";
 import { Grid, Container } from "@material-ui/core";
-import Chart from "./components/Chart";
+// import Chart from "./components/Chart";
 import Deposits from "./components/Deposits";
 import Orders from "./components/Orders";
 import { SidebarDataFirst, SidebarDataSecond } from "./components/SidebarData";
